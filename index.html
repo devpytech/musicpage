@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script type="text/javascript">
+    var ws = new WebSocket("ws://0.0.0.0:8080/websocket");
+    ws.onmessage = function (evt) {
+        alert(evt.data);
+    };
+  </script>
+</head>
+</html>
