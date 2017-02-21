@@ -42,6 +42,16 @@ linkhtml += '''</div></div>'''
 
 @get('/') # or @route('/login')
 def index():
+    player = Playerctl.Player()
+    try:
+        title = player.get_title()
+        artist = player.get_artist()
+        img = os.popen("playerctl metadata mpris:artUrl").read()
+    except:
+        title = ''
+        artist = ''
+        img = ''
+
     return '''
 <html>
 <head>
@@ -87,12 +97,12 @@ def index():
 
   <dl class="mt2 lh-copy">
     <dt class="clip">Title</dt>
-    <dd id="title" class="ml0 fw9" style="color:''' % (os.popen("playerctl metadata mpris:artUrl").read())+fgc+'''">%s</dd>
+    <dd id="title" class="ml0 fw9" style="color:''' % (img)+fgc+'''">%s</dd>
     <dt class="clip">Artist</dt>
     <dd id="artist" class="ml0 gray">%s</dd>
   </dl>
 
-  <div style="text-align:center;color:''' % (Playerctl.Player().get_title(), Playerctl.Player().get_artist())+fgc+'''">
+  <div style="text-align:center;color:''' % (title, artist)+fgc+'''">
     <a onclick="previous();" style="float:left;"><i class="material-icons md-'''+theme+'''">skip_previous</i></a>
     <a onclick="toggle();"><i id ="stateicon" style="width:32px;" class="material-icons md-'''+theme+'''">pause_arrow</i></a>
     <a onclick="next();" style="float:right;"><i class="material-icons md-'''+theme+'''">skip_next</i></a>
@@ -151,7 +161,8 @@ function toggle() {
 </script>
 </body>
 </html>
-'''
+    '''
+
 @post('/next')
 def next_song():
     Playerctl.Player().next()
@@ -170,10 +181,10 @@ def is_playing():
 
 @route('/static/<filename:path>')
 def send_static(filename):
-    return static_file(filename, root='/home/robert/Documents/Python/StartPage')
+    return static_file(filename, root=os.path.dirname(os.path.realpath(' ')))
 
 @route('/fonts/<filename:path>')
 def send_static(filename):
-    return static_file(filename, root='/home/robert/Documents/Python/StartPage')
+    return static_file(filename, root=os.path.dirname(os.path.realpath(' ')))
 
 run(host='0.0.0.0', port=8080)

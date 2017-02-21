@@ -11,13 +11,13 @@ import os
 from gevent import monkey
 monkey.patch_all()
 
-print "starting websocket"
+print("starting websocket")
 
 @get('/websocket', apply=[websocket])
 def echo(ws):
     #print([obj for obj in gc.get_objects() if isinstance(obj, greenlet)])
     #gevent.killall([obj for obj in gc.get_objects() if isinstance(obj, greenlet)])
-    print "connected"
+    print("connected")
     ws.send('%s,%s,%s,%s' % (os.popen("playerctl metadata mpris:artUrl").read(), Playerctl.Player().get_title(), Playerctl.Player().get_artist(), Playerctl.Player().get_property("status")))
     def on_track_change(player, e):
         try:
