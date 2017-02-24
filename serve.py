@@ -6,6 +6,7 @@ from gi.repository import GLib, GObject, Playerctl
 from subprocess import Popen
 import sys
 import os
+from urllib import unquote
 
 Popen([sys.executable, './sendup.py']) #run the websocket script (used to update info)
 
@@ -46,7 +47,13 @@ def index():
     try:
         title = player.get_title()
         artist = player.get_artist()
-        img = os.popen("playerctl metadata mpris:artUrl").read()
+        if player.get_properties('player-name')[0] == 'vlc':
+            imgpath = unquote(os.popen("playerctl metadata mpris:artUrl").read()).replace('file://', '')
+            with open('artwork.jpg', 'wb') as artwork:
+                artwork.write(open(imgpath, 'rb').read())
+            img = '/static/artwork.jpg?{0}'.format(player.get_title())
+        else:
+            img = os.popen("playerctl metadata mpris:artUrl").read()
     except:
         title = ''
         artist = ''

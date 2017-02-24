@@ -8,6 +8,7 @@ from geventwebsocket.exceptions import WebSocketError
 from bottle import run, get
 import threading
 import os
+from urllib import unquote
 from gevent import monkey
 monkey.patch_all()
 
@@ -18,11 +19,24 @@ def echo(ws):
     #print([obj for obj in gc.get_objects() if isinstance(obj, greenlet)])
     #gevent.killall([obj for obj in gc.get_objects() if isinstance(obj, greenlet)])
     print("connected")
-    ws.send('%s,%s,%s,%s' % (os.popen("playerctl metadata mpris:artUrl").read(), Playerctl.Player().get_title(), Playerctl.Player().get_artist(), Playerctl.Player().get_property("status")))
+    if Playerctl.Player().get_properties('player-name')[0] == 'vlc':
+        imgpath = unquote(os.popen("playerctl metadata mpris:artUrl").read()).replace('file://', '')
+        with open('artwork.jpg', 'wb') as artwork:
+            artwork.write(open(imgpath, 'rb').read())
+        img = '/static/artwork.jpg?{0}'.format(Playerctl.Player().get_title())
+    else:
+        img = os.popen("playerctl metadata mpris:artUrl").read()
+    ws.send('%s,%s,%s,%s' % (img, Playerctl.Player().get_title(), Playerctl.Player().get_artist(), Playerctl.Player().get_property("status")))
     def on_track_change(player, e):
         try:
-            #Popen(['notify-send', track_info])
-            ws.send('%s,%s,%s,%s' % (os.popen("playerctl metadata mpris:artUrl").read(), Playerctl.Player().get_title(), Playerctl.Player().get_artist(), Playerctl.Player().get_property("status")))
+            if Playerctl.Player().get_properties('player-name')[0] == 'vlc':
+                imgpath = unquote(os.popen("playerctl metadata mpris:artUrl").read()).replace('file://', '')
+                with open('artwork.jpg', 'wb') as artwork:
+                    artwork.write(open(imgpath, 'rb').read())
+                img = '/static/artwork.jpg?{0}'.format(Playerctl.Player().get_title())
+            else:
+                img = os.popen("playerctl metadata mpris:artUrl").read()
+            ws.send('%s,%s,%s,%s' % (img, Playerctl.Player().get_title(), Playerctl.Player().get_artist(), Playerctl.Player().get_property("status")))
         except WebSocketError:
             player.stop()
             loop.quit()
